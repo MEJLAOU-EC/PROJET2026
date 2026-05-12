@@ -1747,24 +1747,27 @@ document.addEventListener('click', function(e) {
 init();
 </script>
 <script>
-  async function updateStats() {
+  async function fetchBasinStats() {
     const API_KEY = '49b5d4b4761b5cd122b1b47034bc866b'; 
     const FORM_ID = 'ff89f58acbd8'; 
     try {
       const response = await fetch(`https://usebasin.com/api/v1/forms/${FORM_ID}`, {
-        headers: { 'Authorization': `Bearer ${API_KEY}` }
+        headers: { 
+          'Authorization': `Bearer ${API_KEY}`,
+          'Accept': 'application/json'
+        }
       });
       const data = await response.json();
       const statsElement = document.getElementById('stat-total');
-      if (statsElement) {
+      if (statsElement && data.submissions_count !== undefined) {
         statsElement.innerText = data.submissions_count;
         document.getElementById('pb-total').style.width = '100%';
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('خطأ في جلب البيانات:', error);
     }
   }
-  updateStats();
+  document.addEventListener('DOMContentLoaded', fetchBasinStats);
 </script>
 </body>
 </html>
