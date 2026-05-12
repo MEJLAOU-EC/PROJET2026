@@ -973,31 +973,32 @@ const BASIN_ENDPOINTS = {
 async function sendToBasin(category, data) {
   const endpoint = BASIN_ENDPOINTS[category];
   if (!endpoint) {
-    console.warn('⚠ Basin: رابط الفئة "' + category + '" غير مُعيَّن');
+    console.warn('Basin: رابط الفئة "' + category + '" غير معين');
     return;
   }
 
-  // تحويل الكائنات المتداخلة (domains/proposals) إلى نص
-  const flat = {};
+  // FormData باش تظهر التفاصيل صح في لوحة Basin
+  const formData = new FormData();
   for (const [key, val] of Object.entries(data)) {
     if (typeof val === 'object' && val !== null) {
-      flat[key] = JSON.stringify(val);
+      formData.append(key, JSON.stringify(val));
     } else {
-      flat[key] = val ?? '';
+      formData.append(key, val ?? '');
     }
   }
 
   try {
     const res = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(flat)
+      body: formData
     });
     if (!res.ok) {
       const errText = await res.text();
       console.error('Basin error [' + category + ']:', res.status, errText);
     } else {
-      console.log('✅ Basin: تم الإرسال بنجاح للفئة:', category);
+      console.log('Basin: تم الإرسال بنجاح للفئة:', category);
+      // تحديث الإحصائيات بعد 2 ثانية من الإرسال
+      setTimeout(fetchBasinStats, 2000);
     }
   } catch (err) {
     console.error('Basin fetch error [' + category + ']:', err);
@@ -1745,6 +1746,7 @@ document.addEventListener('click', function(e) {
 // RUN
 // ==============================
 init();
+fetchBasinStats();
 </script>
 <script>
   async function fetchBasinStats() {
